@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 from urllib.parse import urljoin
@@ -7,8 +8,15 @@ from utils import get_html, parse_html, get_job_details
 with open('config.json') as config_file:
     config = json.load(config_file)
 
+# Set up logging directory
+log_directory = "logs"
+if not os.path.exists(log_directory):
+    os.makedirs(log_directory)
+
+log_file_path = os.path.join(log_directory, 'main.log')
+
 # Set up logging
-logging.basicConfig(filename='logs/main.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 
 # Get the HTML content of the search page
 search_html = get_html(config['search_url'])
