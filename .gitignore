@@ -78,6 +78,7 @@ target/
 # PyCharm
 .idea/
 *.iml
+main.py
 
 # Jupyter Notebook
 .ipynb_checkpoints
