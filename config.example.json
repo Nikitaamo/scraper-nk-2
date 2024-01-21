@@ -1,0 +1,12 @@
+{
+    "base_url": "https://www.cvbankas.lt",
+    "search_url": "https://www.cvbankas.lt/?padalinys%5B%5D=76&keyw=data+science",
+    "job_list_selector": "article",
+    "job_title_selector": "h1.heading1",
+    "job_company_selector": "span.heading_secondary > span.dib.mt5.mr5",
+    "job_location_selector": "#jobad_location",
+    "job_views_selector": "div.jobad_stat strong.jobad_stat_value",
+    "job_apply_selector": "div.jobad_stat strong.jobad_stat_value",
+    "job_salary_selector": "main article > div > div > div:nth-of-type(2) > header > div:nth-of-type(1) > span > span > span",
+    "delay": 2
+}
