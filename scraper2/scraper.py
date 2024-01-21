@@ -1,8 +1,16 @@
 import os
 import json
 import logging
-from urllib.parse import urljoin
-from utils import get_html, parse_html, get_job_details
+import time
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, quote
+
+from utils import get_html, parse_html
+
+
+def slugify(title):
+    return quote(title.lower().replace(' ', '-'))
+
 
 # Load configuration
 with open('config.json') as config_file:
@@ -17,7 +25,7 @@ log_file_path = os.path.join(log_directory, 'main.log')
 
 # Set up logging
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
-logging.info("Starting the scraper.")
+logging.info("Logging is set up. Starting the scraper.")
 
 # Get the HTML content of the search page
 logging.info(f"Fetching search results from {config['search_url']}")
@@ -29,19 +37,31 @@ if search_html:
     logging.info(f"Found {len(job_elements)} job elements.")
 
     for job_element in job_elements:
-        job_link = job_element.find('a', href=True)
-        if job_link:
-            job_url = urljoin(config['base_url'], job_link['href'])
-            logging.info(f"Fetching job details from {job_url}")
-            job_details = get_job_details(job_url, config)
-            if job_details:
-                title, location_company, views, applied = job_details
-                logging.info(f"Job Title: {title}, Location and Company: {location_company}, Views: {views}, Applied: {applied}")
+        job_title_element = job_element.select_one(config['job_title_selector'])
+        if job_title_element:
+            title = job_title_element.get_text(strip=True)
+            job_slug = slugify(title)
+            job_url = urljoin(config['base_url'], f"{job_slug}/1-11111111")  # Example URL structure
+            logging.info(f"Constructed job URL: {job_url}")
+
+            job_html = get_html(job_url)
+            if job_html:
+                job_soup = BeautifulSoup(job_html, 'html.parser')
+                location = job_soup.select_one(config['job_location_selector']).get_text(strip=True).split('-')[
+                    0].strip()
+                company = job_soup.select_one(config['job_company_selector']).get_text(strip=True)
+                views = job_soup.select_one(config['job_views_selector']).get_text(strip=True)
+                applied = job_soup.select_one(config['job_apply_selector']).get_text(strip=True)
+
+                logging.info(
+                    f"Job Title: {title}, Location: {location}, Company: {company}, Views: {views}, Applied: {applied}")
                 print(f"Scraped: {title}")
             else:
-                logging.error(f"Failed to get job details for {job_url}")
+                logging.error(f"Failed to fetch job details from {job_url}")
+
+            time.sleep(config['delay'])  # Delay as per the configuration
         else:
-            logging.warning("No job link found in job element.")
+            logging.warning(f"No job title found in job element. Element HTML: {job_element}")
 else:
     logging.error("Failed to fetch the search page.")
 
